@@ -3,22 +3,17 @@ import { TwitchChatClient } from "./twitchChat";
 
 export function activate(context: vscode.ExtensionContext) {
   let disposable = vscode.commands.registerCommand("twitch-chat.open", async () => {
-
-    // 2. Abfrage des Namens über die InputBox
-        const channelName = await vscode.window.showInputBox({
-            prompt: 'Enter the name of the channel whose chat you want to see.',
-            placeHolder: 'z.B. TwitchUserName',
-            validateInput: text => {
-                // Optionale Validierung: Verhindern, dass die Eingabe leer ist
-                return text.trim() === '' ? 'Der Name darf nicht leer sein!' : null;
-            }
-        });
-
-        // 3. Prüfen, ob der Benutzer die Eingabe abgebrochen hat (ESC gedrückt)
-        if (channelName === undefined) {
-            vscode.window.showWarningMessage('Aktion abgebrochen.');
-            return; 
-        }
+    const channelName = await vscode.window.showInputBox({
+      prompt: "Enter the name of the channel whose chat you want to see.",
+      placeHolder: "z.B. TwitchUserName",
+      validateInput: (text) => {
+        return text.trim() === "" ? "Der Name darf nicht leer sein!" : null;
+      },
+    });
+    if (channelName === undefined) {
+      vscode.window.showWarningMessage("Aktion abgebrochen.");
+      return;
+    }
 
     const panel = vscode.window.createWebviewPanel(
       "twitchChat",
@@ -41,8 +36,8 @@ export function activate(context: vscode.ExtensionContext) {
     chat.connect();
 
     panel.onDidDispose(() => {
-        chat.disconnect()
-    })
+      chat.disconnect();
+    });
   });
   context.subscriptions.push(disposable);
 }
@@ -113,8 +108,7 @@ window.addEventListener("message", event => {
 `;
 }
 
-export function deactivate() {
-}
+export function deactivate() {}
 /*
 export function activate(context: vscode.ExtensionContext) {
     let disposable = vscode.commands.registerCommand('twitch-chat.open', function() {
