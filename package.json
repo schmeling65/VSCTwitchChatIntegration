@@ -1,0 +1,39 @@
+{
+  "name": "vscintegratedtwitchchat",
+  "displayName": "Twitch Chat in VSCode0",
+  "description": "A VSC Extension to open Twitch Chat in a new File Tab",
+  "version": "1.0.0",
+  "engines": {
+    "vscode": "^1.131.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "twitch-chat.open",
+        "title": "Twitch: Chat öffnen"
+      }
+    ]
+  },
+  "scripts": {
+    "precompile": "node utils/cleanOutput.cjs",
+    "compile": "tsc -p tsconfig.json",
+    "test": "test"
+  },
+  "author": "schmeling65",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/node": "^26.6.5",
+    "@types/vscode": "^1.140.0",
+    "@types/ws": "^8.18.2",
+    "@vscode/vsce": "^4.0.0",
+    "typescript": "^7.0.2"
+  },
+  "dependencies": {
+    "ws": "^8.22.0"
+  }
+}

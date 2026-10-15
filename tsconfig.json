@@ -1,0 +1,12 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "sourceMap": false
+  },
+  "exclude": [
+    "node_modules",
+    ".vscode-test",
+    "src/**/*.test.ts",
+    "src/**/*.spec.ts"
+  ]
+}
