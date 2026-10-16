@@ -21,6 +21,7 @@ export function activate(context: vscode.ExtensionContext) {
       vscode.ViewColumn.One,
       {
         enableScripts: true,
+        retainContextWhenHidden: true 
       },
     );
     panel.webview.html = getWebviewHtml();

@@ -1,4 +1,5 @@
 import WebSocket from "ws";
+import * as vscode from "vscode";
 
 export class TwitchChatClient {
   private ws?: WebSocket;
@@ -12,22 +13,22 @@ export class TwitchChatClient {
     this.ws = new WebSocket("wss://irc-ws.chat.twitch.tv:443");
 
     this.ws.on("open", () => {
-      console.log("Connected to Twitch IRC");
+      vscode.window.showInformationMessage('Connecting to Twitch IRC...');
 
       this.ws?.send("CAP REQ :twitch.tv/tags");
       this.ws?.send("CAP REQ :twitch.tv/commands", () => {
-        console.log("tags and command sent");
+        vscode.window.showInformationMessage('Tags and commands sent.');
       });
 
       this.ws?.send("PASS SCHMOOPIIE", () => {
-        console.log("passed");
+        vscode.window.showInformationMessage('Authentication passed.');
       });
       this.ws?.send("NICK justinfan12345", () => {
-        console.log("nicked");
+        vscode.window.showInformationMessage('Connection nick set.');;
       });
 
       this.ws?.send(`JOIN #${this.channel}`, () => {
-        console.log("joined");
+        vscode.window.showInformationMessage('Channel joined.');;
       });
     });
 
@@ -40,7 +41,7 @@ export class TwitchChatClient {
         console.log("IRC:", line);
         const pingmatch = line.includes("PING");
         if (pingmatch) {
-          this.ws?.send("PONG :tmi.twitch.tv", () => console.log("pong sent"));
+          this.ws?.send("PONG :tmi.twitch.tv");
           continue;
         }
         const parts = line.split(";");
