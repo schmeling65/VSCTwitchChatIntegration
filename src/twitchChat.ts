@@ -43,13 +43,33 @@ export class TwitchChatClient {
           this.ws?.send("PONG :tmi.twitch.tv", () => console.log("pong sent"));
           continue;
         }
-        const match = line.match(
-          /(?:.*color=(?<color>#[0-9A-Fa-f]{6})[^/]*)?.*?:(?<user>[^!]+)!.* PRIVMSG #[^ ]+ :(?<message>.*)/,
-        );
+        const parts = line.split(";");
+        let privmessagespot = null;
+        parts.forEach((part, index) => {
+          if (part.includes("PRIVMSG")) {
+            privmessagespot = index;
+          }
+        });
+        if (privmessagespot === null) {
+          continue;
+        }
+        const tags: Record<string, string> = {};
+        for (let i = 0; i < parts.length - 2; i++) {
+          const part = parts[i];
+          const eqIndex = part.indexOf("=");
+          if (eqIndex !== -1) {
+            const key = part.substring(0, eqIndex);
+            const value = part.substring(eqIndex + 1);
+            tags[key] = value;
+          }
+        }
+        const privmsgPositionInString = parts[parts.length-1].indexOf("PRIVMSG")
+        const messageString = parts[parts.length-1].substring(privmsgPositionInString)
+        const messagePosition = messageString.indexOf(":")
+        const message = messageString.substring(messagePosition+1)
 
-        if (match) {
-          const [, color, user, message] = match;
-          this.onMessage(user, color, message);
+        if (tags["display-name"] && message) {
+          this.onMessage(tags["display-name"], tags["color"], message);
         }
       }
     });

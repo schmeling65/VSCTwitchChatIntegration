@@ -7,11 +7,11 @@ export function activate(context: vscode.ExtensionContext) {
       prompt: "Enter the name of the channel whose chat you want to see.",
       placeHolder: "z.B. TwitchUserName",
       validateInput: (text) => {
-        return text.trim() === "" ? "Der Name darf nicht leer sein!" : null;
+        return text.trim() === "" ? "Channelname is not allowed to be empty" : null;
       },
     });
     if (channelName === undefined) {
-      vscode.window.showWarningMessage("Aktion abgebrochen.");
+      vscode.window.showWarningMessage("Action canceled.");
       return;
     }
 
