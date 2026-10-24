@@ -26,12 +26,13 @@ export function activate(context: vscode.ExtensionContext) {
     );
     panel.webview.html = getWebviewHtml();
 
-    const chat = new TwitchChatClient(channelName, (user, color, message) => {
+    const chat = new TwitchChatClient(channelName, (user, color, message, firstMessage) => {
       panel.webview.postMessage({
         type: "chat",
         user,
         color,
         message,
+        firstMessage
       });
     });
     chat.connect();
@@ -70,6 +71,12 @@ body {
     color: #9147ff;
     font-weight: bold;
 }
+
+.firstMsg {
+    border: 5px solid #e190eb;
+    border-radius: 12px;
+    padding: 3px;
+}
 </style>
 
 </head>
@@ -89,7 +96,7 @@ window.addEventListener("message", event => {
 
     const div = document.createElement("div");
 
-    div.className = "message";
+    div.className = "message" + (data.firstMessage ? " firstMsg" : "");
 
     div.innerHTML =
         "<span class='user' style='color: " + data.color + "'>" +

@@ -6,7 +6,7 @@ export class TwitchChatClient {
 
   constructor(
     private channel: string,
-    private onMessage: (user: string, color: string, message: string) => void,
+    private onMessage: (user: string, color: string, message: string, firstMessage: boolean) => void,
   ) {}
 
   connect() {
@@ -70,7 +70,8 @@ export class TwitchChatClient {
         const message = messageString.substring(messagePosition+1)
 
         if (tags["display-name"] && message) {
-          this.onMessage(tags["display-name"], tags["color"], message);
+          let firstMessage = tags["first-msg"] == "0" ? false : true
+          this.onMessage(tags["display-name"], tags["color"], message, firstMessage);
         }
       }
     });
