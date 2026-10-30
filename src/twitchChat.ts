@@ -3,32 +3,44 @@ import * as vscode from "vscode";
 
 export class TwitchChatClient {
   private ws?: WebSocket;
+  private messageTypes: string[] = ["PRIVMSG", "PING", "RECONNECT", "USERNOTICE"];
+  private msgid: string[] = ["viewermilestone"];
 
   constructor(
     private channel: string,
-    private onMessage: (user: string, color: string, message: string, firstMessage: boolean) => void,
+    private onMessage: (
+      user: string,
+      color: string,
+      message: string,
+      firstMessage: boolean,
+    ) => void,
   ) {}
 
   connect() {
     this.ws = new WebSocket("wss://irc-ws.chat.twitch.tv:443");
 
     this.ws.on("open", () => {
-      vscode.window.showInformationMessage('Connecting to Twitch IRC...');
+      vscode.window.showInformationMessage("Connecting to Twitch IRC...");
 
-      this.ws?.send("CAP REQ :twitch.tv/tags");
+      this.ws?.send("CAP REQ :twitch.tv/tags", () => {
+        vscode.window.showInformationMessage("Data of Chatters requested.");
+      });
       this.ws?.send("CAP REQ :twitch.tv/commands", () => {
-        vscode.window.showInformationMessage('Tags and commands sent.');
+        vscode.window.showInformationMessage("Commands requested.");
+      });
+      this.ws?.send("CAP REQ :twitch.tv/membership", () => {
+        vscode.window.showInformationMessage("Commands requested.");
       });
 
       this.ws?.send("PASS SCHMOOPIIE", () => {
-        vscode.window.showInformationMessage('Authentication passed.');
+        vscode.window.showInformationMessage("Authentication passed.");
       });
       this.ws?.send("NICK justinfan12345", () => {
-        vscode.window.showInformationMessage('Connection nick set.');;
+        vscode.window.showInformationMessage("Connection nick set.");
       });
 
       this.ws?.send(`JOIN #${this.channel}`, () => {
-        vscode.window.showInformationMessage('Channel joined.');;
+        vscode.window.showInformationMessage("Channel joined.");
       });
     });
 
@@ -39,39 +51,39 @@ export class TwitchChatClient {
 
       for (const line of lines) {
         console.log("IRC:", line);
-        const pingmatch = line.includes("PING");
-        if (pingmatch) {
-          this.ws?.send("PONG :tmi.twitch.tv");
-          continue;
-        }
-        const parts = line.split(";");
-        let privmessagespot = null;
-        parts.forEach((part, index) => {
-          if (part.includes("PRIVMSG")) {
-            privmessagespot = index;
-          }
-        });
-        if (privmessagespot === null) {
-          continue;
-        }
-        const tags: Record<string, string> = {};
-        for (let i = 0; i < parts.length - 2; i++) {
-          const part = parts[i];
-          const eqIndex = part.indexOf("=");
-          if (eqIndex !== -1) {
-            const key = part.substring(0, eqIndex);
-            const value = part.substring(eqIndex + 1);
-            tags[key] = value;
+        let foundMessageType = null;
+        for (const messageType in this.messageTypes) {
+          if (line.includes(messageType)) {
+            foundMessageType = messageType;
+            break;
           }
         }
-        const privmsgPositionInString = parts[parts.length-1].indexOf("PRIVMSG")
-        const messageString = parts[parts.length-1].substring(privmsgPositionInString)
-        const messagePosition = messageString.indexOf(":")
-        const message = messageString.substring(messagePosition+1)
+        if (!foundMessageType) {
+          continue;
+        }
 
-        if (tags["display-name"] && message) {
-          let firstMessage = tags["first-msg"] == "0" ? false : true
-          this.onMessage(tags["display-name"], tags["color"], message, firstMessage);
+        switch (foundMessageType) {
+          case "PING":
+            this.ws?.send("PONG :tmi.twitch.tv");
+            break;
+          case "RECONNECT":
+            this.disconnect();
+            this.connect();
+            break;
+          case "PRIVMSG":
+          case "USERNOTICE":
+            //msg-id=viewermilestone msg-param-value=145 -> Zuschauerserie von 145
+            //msg-id=announcement
+            //msg-id=resub msg-param-cumulative-months=43 (streak) msg-param-multimonth-duration=6 (im vorraus) msg-param-sub-plan=2000 (sub stufe in 1000, Prime when prime) nach USERNOTICE -> msg
+            const tags: Record<string, string> = {};
+            const message = this.parseString(line, tags, foundMessageType);
+
+            if (tags["display-name"] && message) {
+              let firstMessage = tags["first-msg"] == "0" ? false : true;
+              this.onMessage(tags["display-name"], tags["color"], message, firstMessage);
+            }
+            break;
+          default:
         }
       }
     });
@@ -85,5 +97,30 @@ export class TwitchChatClient {
       this.ws?.close();
       this.ws = undefined;
     }
+  }
+
+  parseString(line: string, tags: Record<string, string>, messageType: string) {
+    const parts = line.split(";");
+    this.createTagsTable(parts, tags);
+    return this.isolateMessage(parts, messageType);
+  }
+
+  createTagsTable(parts: string[], tags: Record<string, string>) {
+    for (let i = 0; i < parts.length - 2; i++) {
+      const part = parts[i];
+      const eqIndex = part.indexOf("=");
+      if (eqIndex !== -1) {
+        const key = part.substring(0, eqIndex);
+        const value = part.substring(eqIndex + 1);
+        tags[key] = value;
+      }
+    }
+  }
+
+  isolateMessage(parts: string[], messageType: string) {
+    const privmsgPositionInString = parts[parts.length - 1].indexOf(messageType);
+    const messageString = parts[parts.length - 1].substring(privmsgPositionInString);
+    const messagePosition = messageString.indexOf(":");
+    return messageString.substring(messagePosition + 1);
   }
 }
