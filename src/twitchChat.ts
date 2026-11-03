@@ -1,10 +1,10 @@
 import WebSocket from "ws";
 import * as vscode from "vscode";
+import { NumberToOrdinal } from "./formatOrdinalNumber";
 
 export class TwitchChatClient {
   private ws?: WebSocket;
   private messageTypes: string[] = ["PRIVMSG", "PING", "RECONNECT", "USERNOTICE"];
-  private msgid: string[] = ["viewermilestone"];
 
   constructor(
     private channel: string,
@@ -13,6 +13,14 @@ export class TwitchChatClient {
       color: string,
       message: string,
       firstMessage: boolean,
+      isUserNotice?: boolean,
+    ) => void,
+    private onUserNotice: (
+      user: string,
+      color: string,
+      message: string,
+      msgType: string,
+      msgData: {},
     ) => void,
   ) {}
 
@@ -52,16 +60,16 @@ export class TwitchChatClient {
       for (const line of lines) {
         console.log("IRC:", line);
         let foundMessageType = null;
-        for (const messageType in this.messageTypes) {
+        for (const messageType of this.messageTypes) {
           if (line.includes(messageType)) {
             foundMessageType = messageType;
             break;
           }
         }
+        console.log(foundMessageType)
         if (!foundMessageType) {
           continue;
         }
-
         switch (foundMessageType) {
           case "PING":
             this.ws?.send("PONG :tmi.twitch.tv");
@@ -71,16 +79,89 @@ export class TwitchChatClient {
             this.connect();
             break;
           case "PRIVMSG":
-          case "USERNOTICE":
-            //msg-id=viewermilestone msg-param-value=145 -> Zuschauerserie von 145
-            //msg-id=announcement
-            //msg-id=resub msg-param-cumulative-months=43 (streak) msg-param-multimonth-duration=6 (im vorraus) msg-param-sub-plan=2000 (sub stufe in 1000, Prime when prime) nach USERNOTICE -> msg
+            console.log("privMSG received")
             const tags: Record<string, string> = {};
             const message = this.parseString(line, tags, foundMessageType);
 
             if (tags["display-name"] && message) {
               let firstMessage = tags["first-msg"] == "0" ? false : true;
-              this.onMessage(tags["display-name"], tags["color"], message, firstMessage);
+              this.onMessage(tags["display-name"], tags["color"], message, firstMessage, false);
+            }
+            break;
+          case "USERNOTICE":
+            //msg-id=viewermilestone msg-param-value=145 -> Zuschauerserie von 145
+            //msg-id=announcement
+            //msg-id=resub msg-param-cumulative-months=43 (streak) msg-param-multimonth-duration=6 (im vorraus) msg-param-sub-plan=2000 (sub stufe in 1000, Prime when prime) nach USERNOTICE -> msg
+            //msg-id=raid msg-param-viewerCount=1
+            const tagslist: Record<string, string> = {};
+            const usernoticeMessage = this.parseString(line, tagslist, foundMessageType);
+            switch (tagslist["msg-id"]) {
+              case "viewermilestone":
+                this.onUserNotice(
+                  tagslist["display-name"],
+                  tagslist["color"],
+                  usernoticeMessage,
+                  "viewermilestone",
+                  { streak: tagslist["msg-param-value"] },
+                );
+                break;
+              case "announcement":
+                this.onUserNotice(
+                  tagslist["display-name"],
+                  tagslist["color"],
+                  usernoticeMessage,
+                  "annoucement",
+                  {},
+                );
+                break;
+              case "resub":
+                this.onUserNotice(
+                  tagslist["display-name"],
+                  tagslist["color"],
+                  usernoticeMessage,
+                  "resub",
+                  {
+                    tier: tagslist["msg-param-sub-plan"],
+                    numberOfTotalMonths: NumberToOrdinal(parseInt(tagslist["msg-param-cumulative-months"])),
+                    wantsToShare: tagslist["msg-param-should-share-streak"],
+                    consecutiveMonths: tagslist["msg-param-streak-months"],
+
+                  },
+                );
+                break;
+              case "sub":
+                this.onUserNotice(
+                  tagslist["display-name"],
+                  tagslist["color"],
+                  usernoticeMessage,
+                  "sub",
+                  { tier: tagslist["msg-param-sub-plan"],
+                    numberOfTotalMonths: tagslist["msg-param-cumulative-months"]
+                  },
+                );
+                break;
+              case "subgift":
+                this.onUserNotice(
+                  tagslist["display-name"],
+                  tagslist["color"],
+                  usernoticeMessage,
+                  "sub",
+                  {
+                    tier: tagslist["msg-param-sub-plan"],
+                    reciever: tagslist["msg-param-recipient-name"],
+                  },
+                );
+                break;
+              case "raid":
+                this.onUserNotice(
+                  tagslist["display-name"],
+                  tagslist["color"],
+                  "is raiding with " + tagslist["msg-param-viewerCount"] + " viewers.",
+                  "raid",
+                  {},
+                );
+                break;
+              default:
             }
             break;
           default:

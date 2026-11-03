@@ -1,0 +1,44 @@
+body {
+    background: #1e1e1e;
+    color: white;
+    font-family: sans-serif;
+    margin: 0;
+}
+
+#chat {
+    padding: 10px;
+}
+
+.message {
+    margin: 4px 0;
+}
+
+.user {
+    color: #9147ff;
+    font-weight: bold;
+}
+
+.firstMsg {
+    border: 5px solid #e190eb;
+    border-radius: 12px;
+    padding: 3px;
+}
+
+.viewermilestone{
+    border: 5px solid #e7e8e9;
+    border-radius: 12px;
+    padding: 3px;
+}
+
+.annoucement {
+  border-left: 8px solid #9147ff;
+  border-right:8px solid #9147ff;
+}
+
+.raid {
+  border-left: 8px solid #e190eb;
+}
+
+.sub {
+  
+}

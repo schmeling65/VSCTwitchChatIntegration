@@ -22,12 +22,14 @@
   "scripts": {
     "precompile": "node utils/cleanOutput.cjs",
     "compile": "tsc -p tsconfig.json",
+    "postcompile": "node utils/copyPublicToOutput.cjs",
     "test": "test",
     "prestartpackagepipeline":"npm install",
     "startpackagepipeline":"vsce package --skip-license",
     "vscode:prepublish": "npm run compile",
     "precompilefortest": "node utils/cleanOutput.cjs",
-    "compilefortest":"tsc -p tsconfig.test.json"
+    "compilefortest":"tsc -p tsconfig.test.json",
+    "postcompilefortest":"node utils/copyPublicToOutput.cjs"
   },
   "author": "schmeling65",
   "license": "ISC",

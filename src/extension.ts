@@ -1,5 +1,7 @@
 import * as vscode from "vscode";
 import { TwitchChatClient } from "./twitchChat";
+import path from "path";
+import fs from "fs";
 
 export function activate(context: vscode.ExtensionContext) {
   let disposable = vscode.commands.registerCommand("twitch-chat.open", async () => {
@@ -14,27 +16,42 @@ export function activate(context: vscode.ExtensionContext) {
       vscode.window.showWarningMessage("Action canceled.");
       return;
     }
-
+    const webviewFolderUri = vscode.Uri.file(path.join(context.extensionPath, "out"));
     const panel = vscode.window.createWebviewPanel(
       "twitchChat",
       "Twitch Chat",
       vscode.ViewColumn.One,
       {
         enableScripts: true,
-        retainContextWhenHidden: true 
+        retainContextWhenHidden: true,
+        localResourceRoots: [webviewFolderUri],
       },
     );
-    panel.webview.html = getWebviewHtml();
 
-    const chat = new TwitchChatClient(channelName, (user, color, message, firstMessage) => {
-      panel.webview.postMessage({
-        type: "chat",
-        user,
-        color,
-        message,
-        firstMessage
-      });
-    });
+      const scriptUri = panel.webview.asWebviewUri(
+    vscode.Uri.joinPath(context.extensionUri, 'out', 'index.js')
+  );
+    const cssUri = panel.webview.asWebviewUri(
+    vscode.Uri.joinPath(context.extensionUri, 'out', 'index.css')
+  );
+    panel.webview.html = getWebviewHtml(context, scriptUri, cssUri);
+
+    const chat = new TwitchChatClient(
+      channelName,
+      (user, color, message, firstMessage) => {
+        panel.webview.postMessage({
+          type: "chat",
+          user,
+          color,
+          message,
+          firstMessage,
+        });
+      },
+      (user, color, message, msgType, msgData) => {
+        panel.webview.postMessage({ type: "usernotice", user, color, message, msgType, msgData });
+      },
+    );
+
     chat.connect();
 
     panel.onDidDispose(() => {
@@ -44,80 +61,12 @@ export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(disposable);
 }
 
-function getWebviewHtml(): string {
-  return `
-<!DOCTYPE html>
-<html>
-<head>
-<meta charset="UTF-8">
-
-<style>
-body {
-    background: #1e1e1e;
-    color: white;
-    font-family: sans-serif;
-    margin: 0;
-}
-
-#chat {
-    padding: 10px;
-}
-
-.message {
-    margin: 4px 0;
-}
-
-.user {
-    color: #9147ff;
-    font-weight: bold;
-}
-
-.firstMsg {
-    border: 5px solid #e190eb;
-    border-radius: 12px;
-    padding: 3px;
-}
-</style>
-
-</head>
-<body>
-
-<div id="chat"></div>
-
-<script>
-
-const chat = document.getElementById("chat");
-
-window.addEventListener("message", event => {
-    const data = event.data;
-
-    if(data.type !== "chat")
-        return;
-
-    const div = document.createElement("div");
-
-    div.className = "message" + (data.firstMessage ? " firstMsg" : "");
-
-    div.innerHTML =
-        "<span class='user' style='color: " + data.color + "'>" +
-        data.user +
-        "</span>: " +
-        data.message;
-
-    chat.appendChild(div);
-
-    if (chat.children.length > 100) {
-        chat.removeChild(chat.firstChild);
-    }
-
-    window.scrollTo(0, document.body.scrollHeight);
-});
-
-</script>
-
-</body>
-</html>
-`;
+function getWebviewHtml(context: vscode.ExtensionContext, scriptUri: vscode.Uri, cssUri: vscode.Uri) {
+  let htmlcontent = fs.readFileSync(
+    vscode.Uri.file(path.join(context.extensionPath, "out", "index.html")).fsPath,
+    "utf8",
+  );
+  return htmlcontent.replace('index.js', scriptUri.toString()).replace('index.css', cssUri.toString());
 }
 
 export function deactivate() {}
