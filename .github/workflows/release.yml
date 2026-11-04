@@ -29,6 +29,7 @@ jobs:
           name: extension
           compression-level: 9
           overwrite: true
+          retention-days: 5
 
   release:
     name: Create Release
