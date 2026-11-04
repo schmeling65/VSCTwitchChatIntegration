@@ -8,7 +8,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Setup Repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Install NodeJS
         uses: actions/setup-node@v7
@@ -19,65 +19,42 @@ jobs:
         run: |
           npm run startpackagepipeline
 
-      - name: Package
+      - name: Get Version
         run: |
-          mkdir ext
-          EXTVER="$(jq ".version" extension/package.json | tail -c +2 | head -c -2)"
-          cp ./vscintegratedtwitchchat-${EXTVER}.vsix ./ext/vscintegratedtwitchchat-${EXTVER}.vsix
-          echo ${EXTVER} > ext/debuggerlatestextension.txt
+          echo "EXTVER=$(jq -r '.version' package.json)" >> $GITHUB_ENV
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
-          path: ./ext
+          path: vscintegratedtwitchchat-${{ env.EXTVER }}.vsix
           name: extension
+          compression-level: 9
           overwrite: true
 
   release:
-    name: release
+    name: Create Release
     runs-on: ubuntu-latest
     needs:
       - buildExtension
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
-      - uses: actions/download-artifact@v7
+      - name: Extrahiere Version
+        run: |
+          echo "VERSION=$(jq -r '.version' package.json)" >> $GITHUB_ENV
+
+      - name: Download Artifact
+        uses: actions/download-artifact@v7
         with:
           name: extension
-          path: ./ext
-
-      - name: zip release
-        run: |
-          sudo apt install zip
-          cd ./Release
-          zip -r ../Release.zip .
-          cd ../
-          
-          echo "EXT_VER=$(jq ".version" extension/package.json | tail -c +2 | head -c -2)" >> $GITHUB_ENV
-          
-          wget https://github.com/mcb5637/S5Updater/releases/download/nightly/HashFileBuilder
-          chmod u+x HashFileBuilder 
-          ./HashFileBuilder LuaDebuggerFile.dll ./Release/LuaDebugger.dll > ./debuggerhashes.txt
-
-      - name: Delete tag
-        run: gh release delete nightly --cleanup-tag -y || true
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - uses: softprops/action-gh-release@v2
+          path: .
+      
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
         with:
-          body: "latest code from master"
-          prerelease: true
-          files: |
-            ./Release.zip
-            ./ext/S5LuaDebuggerAdaptor-${{ env.EXT_VER }}.vsix
-            ./ext/debuggerlatestextension.txt
-            ./debuggerhashes.txt
-          name: nightly
-          tag_name: nightly
-          fail_on_unmatched_files: true
-          target_commitish: master
-          generate_release_notes: false
-          append_body: false
-          make_latest: false
+          tag_name: "v${{ env.VERSION }}"
+          name: "Release v${{ env.VERSION }}"
+          draft: false
+          prerelease: false
+          files: "vscintegratedtwitchchat-${{ env.VERSION }}.vsix"

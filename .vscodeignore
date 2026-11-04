@@ -1,6 +1,7 @@
 .vscode/**
 .vscode-test/**
 src/**
+public/**
 .gitignore
 .yarnrc
 vscode-extension-iml
@@ -9,3 +10,4 @@ utils/**
 tsconfig.json
 tsconfig.base.json
 tsconfig.test.json
+package-lock.json
