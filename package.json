@@ -2,7 +2,7 @@
   "name": "vscintegratedtwitchchat",
   "displayName": "Twitch Chat in VSCode",
   "description": "A VSC Extension to open Twitch Chat in a new File Tab",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "engines": {
     "vscode": "^1.131.0"
   },
