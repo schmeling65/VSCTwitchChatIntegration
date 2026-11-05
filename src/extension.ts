@@ -29,26 +29,28 @@ export function activate(context: vscode.ExtensionContext) {
     );
 
     const scriptUri = panel.webview.asWebviewUri(
-    vscode.Uri.file(path.join(context.extensionPath, 'out', 'index.js'))
-  );
+      vscode.Uri.file(path.join(context.extensionPath, "out", "index.js")),
+    );
     const cssUri = panel.webview.asWebviewUri(
-    vscode.Uri.file(path.join(context.extensionPath, 'out', 'index.css'))
-  );
-    panel.webview.html = getWebviewHtml(context, scriptUri.toString(), cssUri.toString(), panel.webview.cspSource);
+      vscode.Uri.file(path.join(context.extensionPath, "out", "index.css")),
+    );
+    panel.webview.html = getWebviewHtml(
+      context,
+      scriptUri.toString(),
+      cssUri.toString(),
+      panel.webview.cspSource,
+    );
 
     const chat = new TwitchChatClient(
       channelName,
-      (user, color, message, firstMessage) => {
+      (type: string, user: string, color: string, message: string, otherData: {}) => {
         panel.webview.postMessage({
-          type: "chat",
+          type,
           user,
           color,
           message,
-          firstMessage,
+          otherData,
         });
-      },
-      (user, color, message, msgType, msgData) => {
-        panel.webview.postMessage({ type: "usernotice", user, color, message, msgType, msgData });
       },
     );
 
@@ -61,12 +63,20 @@ export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(disposable);
 }
 
-function getWebviewHtml(context: vscode.ExtensionContext, scriptUri: string, cssUri: string, cspSource: string) {
+function getWebviewHtml(
+  context: vscode.ExtensionContext,
+  scriptUri: string,
+  cssUri: string,
+  cspSource: string,
+) {
   let htmlcontent = fs.readFileSync(
     vscode.Uri.file(path.join(context.extensionPath, "out", "index.html")).fsPath,
     "utf8",
   );
-  return htmlcontent.replaceAll("{{cspSource}}",cspSource).replaceAll('index.js', scriptUri).replaceAll('index.css', cssUri);
+  return htmlcontent
+    .replaceAll("{{cspSource}}", cspSource)
+    .replaceAll("index.js", scriptUri)
+    .replaceAll("index.css", cssUri);
 }
 
 export function deactivate() {}

@@ -8,20 +8,7 @@ export class TwitchChatClient {
 
   constructor(
     private channel: string,
-    private onMessage: (
-      user: string,
-      color: string,
-      message: string,
-      firstMessage: boolean,
-      isUserNotice?: boolean,
-    ) => void,
-    private onUserNotice: (
-      user: string,
-      color: string,
-      message: string,
-      msgType: string,
-      msgData: {},
-    ) => void,
+    private onMessage: (type: string, user: string, color: string, message: string, {}) => void,
   ) {}
 
   connect() {
@@ -83,7 +70,10 @@ export class TwitchChatClient {
 
             if (tags["display-name"] && message) {
               let firstMessage = tags["first-msg"] == "0" ? false : true;
-              this.onMessage(tags["display-name"], tags["color"], message, firstMessage, false);
+              this.onMessage("chat", tags["display-name"], tags["color"], message, {
+                firstMessage: firstMessage,
+                id: tags["id"],
+              });
             }
             break;
           case "USERNOTICE":
@@ -91,76 +81,91 @@ export class TwitchChatClient {
             //msg-id=announcement
             //msg-id=resub msg-param-cumulative-months=43 (streak) msg-param-multimonth-duration=6 (im vorraus) msg-param-sub-plan=2000 (sub stufe in 1000, Prime when prime) nach USERNOTICE -> msg
             //msg-id=raid msg-param-viewerCount=1
+
             const tagslist: Record<string, string> = {};
             const usernoticeMessage = this.parseString(line, tagslist, foundMessageType);
             switch (tagslist["msg-id"]) {
               case "viewermilestone":
-                this.onUserNotice(
+                this.onMessage(
+                  "usernotice",
                   tagslist["display-name"],
                   tagslist["color"],
                   usernoticeMessage,
-                  "viewermilestone",
-                  { streak: tagslist["msg-param-value"] },
+                  {
+                    msgType: "viewermilestone",
+                    streak: tagslist["msg-param-value"],
+                  },
                 );
                 break;
               case "announcement":
-                this.onUserNotice(
+                this.onMessage(
+                  "usernotice",
                   tagslist["display-name"],
                   tagslist["color"],
                   usernoticeMessage,
-                  "annoucement",
-                  {},
+                  {
+                    msgType: "annoucement",
+                  },
                 );
                 break;
               case "resub":
-                this.onUserNotice(
+                this.onMessage(
+                  "usernotice",
                   tagslist["display-name"],
                   tagslist["color"],
                   usernoticeMessage,
-                  "resub",
                   {
+                    msgType: "resub",
                     tier: tagslist["msg-param-sub-plan"],
-                    numberOfTotalMonths: NumberToOrdinal(parseInt(tagslist["msg-param-cumulative-months"])),
+                    numberOfTotalMonths: NumberToOrdinal(
+                      parseInt(tagslist["msg-param-cumulative-months"]),
+                    ),
                     wantsToShare: tagslist["msg-param-should-share-streak"],
                     consecutiveMonths: tagslist["msg-param-streak-months"],
-
                   },
                 );
                 break;
               case "sub":
-                this.onUserNotice(
+                this.onMessage(
+                  "usernotice",
                   tagslist["display-name"],
                   tagslist["color"],
                   usernoticeMessage,
-                  "sub",
-                  { tier: tagslist["msg-param-sub-plan"],
-                    numberOfTotalMonths: tagslist["msg-param-cumulative-months"]
+                  {
+                    msgType: "sub",
+                    tier: tagslist["msg-param-sub-plan"],
+                    numberOfTotalMonths: tagslist["msg-param-cumulative-months"],
                   },
                 );
                 break;
               case "subgift":
-                this.onUserNotice(
+                this.onMessage(
+                  "usernotice",
                   tagslist["display-name"],
                   tagslist["color"],
                   usernoticeMessage,
-                  "sub",
                   {
+                    msgType: "sub",
                     tier: tagslist["msg-param-sub-plan"],
                     reciever: tagslist["msg-param-recipient-name"],
                   },
                 );
                 break;
               case "raid":
-                this.onUserNotice(
+                this.onMessage(
+                  "usernotice",
                   tagslist["display-name"],
                   tagslist["color"],
                   "is raiding with " + tagslist["msg-param-viewerCount"] + " viewers.",
-                  "raid",
-                  {},
+                  {
+                    msgType: "raid",
+                  },
                 );
                 break;
               default:
             }
+            break;
+          case "CLEARMSG":
             break;
           default:
         }
