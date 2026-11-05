@@ -1,26 +1,29 @@
 const vscode = acquireVsCodeApi();
 
 const chat = document.getElementById("chat");
+const msgtypes = ["chat","usernotice","clearmsg"]
 
 window.addEventListener("message", (event) => {
   console.log(event);
-  const data = event.data;
+  const generaldata = event.data;
 
-  if (data.type !== "chat" && data.type !== "usernotice") return;
-  console.log(data.type);
-  switch (data.type) {
+  if (!msgtypes.includes(generaldata.type)) return;
+  let div;
+  console.log(generaldata.type)
+  switch (generaldata.type) {
     case "chat":
-      postChatMessage(data);
+      div = postChatMessage(generaldata.data);
       break;
     case "usernotice":
-      postUserNotice(data);
+      div = postUserNotice(generaldata.data);
       break;
     case "clearmsg":
-      deleteChatMEssage(data.id);
+      console.log("clearmsg got in frontend")
+      deleteChatMEssage(generaldata.data.id);
+      break;
     default:
   }
-
-  chat.appendChild(div);
+  if (div !== null) chat.appendChild(div);
 
   if (chat.children.length > 100) {
     chat.removeChild(chat.firstChild);
@@ -50,6 +53,7 @@ function postChatMessage(data) {
   div.id = data.id;
   div.className += data.firstMessage ? " firstMsg" : "";
   div.appendChild(document.createTextNode(": " + data.message));
+  return div
 }
 
 function postUserNotice(data) {
@@ -105,6 +109,7 @@ function postUserNotice(data) {
       div.appendChild(createUserSpan(data.user, data.color));
       div.appendChild(document.createTextNode(" " + data.message));
   }
+  return div
 }
 
 function createMessageDiv(data) {

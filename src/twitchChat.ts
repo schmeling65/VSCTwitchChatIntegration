@@ -4,11 +4,11 @@ import { NumberToOrdinal } from "./formatOrdinalNumber";
 
 export class TwitchChatClient {
   private ws?: WebSocket;
-  private messageTypes: string[] = ["PRIVMSG", "PING", "RECONNECT", "USERNOTICE"];
+  private messageTypes: string[] = ["PRIVMSG", "PING", "RECONNECT", "USERNOTICE", "CLEARMSG"];
 
   constructor(
     private channel: string,
-    private onMessage: (type: string, user: string, color: string, message: string, {}) => void,
+    private onMessage: (type: string, {}) => void,
   ) {}
 
   connect() {
@@ -56,6 +56,7 @@ export class TwitchChatClient {
         if (!foundMessageType) {
           continue;
         }
+        console.log(foundMessageType)
         switch (foundMessageType) {
           case "PING":
             this.ws?.send("PONG :tmi.twitch.tv");
@@ -70,7 +71,7 @@ export class TwitchChatClient {
 
             if (tags["display-name"] && message) {
               let firstMessage = tags["first-msg"] == "0" ? false : true;
-              this.onMessage("chat", tags["display-name"], tags["color"], message, {
+              this.onMessage("chat", {user: tags["display-name"], color: tags["color"], message: message, 
                 firstMessage: firstMessage,
                 id: tags["id"],
               });
@@ -88,10 +89,10 @@ export class TwitchChatClient {
               case "viewermilestone":
                 this.onMessage(
                   "usernotice",
-                  tagslist["display-name"],
-                  tagslist["color"],
-                  usernoticeMessage,
                   {
+                  user: tagslist["display-name"],
+                  color: tagslist["color"],
+                  message: usernoticeMessage,
                     msgType: "viewermilestone",
                     streak: tagslist["msg-param-value"],
                   },
@@ -100,10 +101,10 @@ export class TwitchChatClient {
               case "announcement":
                 this.onMessage(
                   "usernotice",
-                  tagslist["display-name"],
-                  tagslist["color"],
-                  usernoticeMessage,
                   {
+                  user: tagslist["display-name"],
+                  color: tagslist["color"],
+                  message: usernoticeMessage,
                     msgType: "annoucement",
                   },
                 );
@@ -111,10 +112,10 @@ export class TwitchChatClient {
               case "resub":
                 this.onMessage(
                   "usernotice",
-                  tagslist["display-name"],
-                  tagslist["color"],
-                  usernoticeMessage,
                   {
+                  user: tagslist["display-name"],
+                  color: tagslist["color"],
+                  message: usernoticeMessage,
                     msgType: "resub",
                     tier: tagslist["msg-param-sub-plan"],
                     numberOfTotalMonths: NumberToOrdinal(
@@ -128,10 +129,10 @@ export class TwitchChatClient {
               case "sub":
                 this.onMessage(
                   "usernotice",
-                  tagslist["display-name"],
-                  tagslist["color"],
-                  usernoticeMessage,
                   {
+                user:     tagslist["display-name"],
+                  color: tagslist["color"],
+                  message: usernoticeMessage,
                     msgType: "sub",
                     tier: tagslist["msg-param-sub-plan"],
                     numberOfTotalMonths: tagslist["msg-param-cumulative-months"],
@@ -141,10 +142,10 @@ export class TwitchChatClient {
               case "subgift":
                 this.onMessage(
                   "usernotice",
-                  tagslist["display-name"],
-                  tagslist["color"],
-                  usernoticeMessage,
                   {
+                  user: tagslist["display-name"],
+                  color: tagslist["color"],
+                  message: usernoticeMessage,
                     msgType: "sub",
                     tier: tagslist["msg-param-sub-plan"],
                     reciever: tagslist["msg-param-recipient-name"],
@@ -154,10 +155,10 @@ export class TwitchChatClient {
               case "raid":
                 this.onMessage(
                   "usernotice",
-                  tagslist["display-name"],
-                  tagslist["color"],
-                  "is raiding with " + tagslist["msg-param-viewerCount"] + " viewers.",
                   {
+                  user: tagslist["display-name"],
+                  color: tagslist["color"],
+                  message: "is raiding with " + tagslist["msg-param-viewerCount"] + " viewers.",
                     msgType: "raid",
                   },
                 );
@@ -166,6 +167,9 @@ export class TwitchChatClient {
             }
             break;
           case "CLEARMSG":
+            const match = line.match(/target-msg-id=([^;]+)/);
+            const targetMsgId: string = match![1];
+            this.onMessage("clearmsg",{id: targetMsgId})
             break;
           default:
         }

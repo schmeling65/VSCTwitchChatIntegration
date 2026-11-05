@@ -43,13 +43,10 @@ export function activate(context: vscode.ExtensionContext) {
 
     const chat = new TwitchChatClient(
       channelName,
-      (type: string, user: string, color: string, message: string, otherData: {}) => {
+      (type: string, data: {}) => {
         panel.webview.postMessage({
           type,
-          user,
-          color,
-          message,
-          otherData,
+          data
         });
       },
     );
