@@ -45,11 +45,11 @@ window.addEventListener("message", event => {
         case "sub":
           div.appendChild(createUserSpan(data.user, data.color));
     
-          let text = " subscribed with a tier " + data.tier + " sub.";
+          let subtext = " subscribed with a tier " + data.tier + " sub.";
           if (subMonths > 0) {
-            text += " Sub-streak: " + data.msgData.numberOfTotalMonths;
+            subtext += " Sub-streak: " + data.msgData.numberOfTotalMonths;
           }
-          div.appendChild(document.createTextNode(text));
+          div.appendChild(document.createTextNode(subtext));
           //div.innerHTML = "<span class='user' style='color: " + data.color + "'>" + data.user + "</span> subscribed with a tier " + data.tier + " sub." + (msg-param-cumulative-months > 0 && " Sub-streak: " + data.msgData.numberOfTotalMonths0)
           break;
         case "subgift":

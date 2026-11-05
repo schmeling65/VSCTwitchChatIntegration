@@ -28,13 +28,13 @@ export function activate(context: vscode.ExtensionContext) {
       },
     );
 
-      const scriptUri = panel.webview.asWebviewUri(
-    vscode.Uri.joinPath(context.extensionUri, 'out', 'index.js')
+    const scriptUri = panel.webview.asWebviewUri(
+    vscode.Uri.file(path.join(context.extensionPath, 'out', 'index.js'))
   );
     const cssUri = panel.webview.asWebviewUri(
-    vscode.Uri.joinPath(context.extensionUri, 'out', 'index.css')
+    vscode.Uri.file(path.join(context.extensionPath, 'out', 'index.css'))
   );
-    panel.webview.html = getWebviewHtml(context, scriptUri, cssUri);
+    panel.webview.html = getWebviewHtml(context, scriptUri.toString(), cssUri.toString(), panel.webview.cspSource);
 
     const chat = new TwitchChatClient(
       channelName,
@@ -61,12 +61,12 @@ export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(disposable);
 }
 
-function getWebviewHtml(context: vscode.ExtensionContext, scriptUri: vscode.Uri, cssUri: vscode.Uri) {
+function getWebviewHtml(context: vscode.ExtensionContext, scriptUri: string, cssUri: string, cspSource: string) {
   let htmlcontent = fs.readFileSync(
     vscode.Uri.file(path.join(context.extensionPath, "out", "index.html")).fsPath,
     "utf8",
   );
-  return htmlcontent.replace('index.js', scriptUri.toString()).replace('index.css', cssUri.toString());
+  return htmlcontent.replaceAll("{{cspSource}}",cspSource).replaceAll('index.js', scriptUri).replaceAll('index.css', cssUri);
 }
 
 export function deactivate() {}

@@ -66,7 +66,6 @@ export class TwitchChatClient {
             break;
           }
         }
-        console.log(foundMessageType)
         if (!foundMessageType) {
           continue;
         }
@@ -79,7 +78,6 @@ export class TwitchChatClient {
             this.connect();
             break;
           case "PRIVMSG":
-            console.log("privMSG received")
             const tags: Record<string, string> = {};
             const message = this.parseString(line, tags, foundMessageType);
 
