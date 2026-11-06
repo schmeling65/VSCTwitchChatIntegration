@@ -15,7 +15,7 @@ window.addEventListener("message", (event) => {
       div = postChatMessage(generaldata.data);
       break;
     case "usernotice":
-      div = postUserNotice(generaldata.data);
+      div = postUserNotice(generaldata);
       break;
     case "clearmsg":
       console.log("clearmsg got in frontend")
@@ -50,9 +50,12 @@ function postChatMessage(data) {
   if (data.firstMessage) {
     div.classList.add("firstMsg");
   }
+  if (data.bits) {
+
+  }
   div.id = data.id;
   div.className += data.firstMessage ? " firstMsg" : "";
-  div.appendChild(document.createTextNode(": " + data.message));
+  div.appendChild(document.createTextNode(": "+ data.bits + " BITS. " + data.message));
   return div
 }
 
@@ -61,7 +64,6 @@ function postUserNotice(data) {
   div.className = " " + data.msgType;
   switch (data.msgType) {
     case "viewermilestone":
-      div.appendChild(createUserSpan(data.user, data.color));
       const text1 = document.createTextNode(" is on a " + data.msgData.streak + " watchstreak!\n");
       div.appendChild(text1);
       const msgSpan = document.createElement("span");

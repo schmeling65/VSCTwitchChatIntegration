@@ -70,10 +70,12 @@ export class TwitchChatClient {
             const message = this.parseString(line, tags, foundMessageType);
 
             if (tags["display-name"] && message) {
-              let firstMessage = tags["first-msg"] == "0" ? false : true;
+              const firstMessage = tags["first-msg"] == "0" ? false : true;
+              const bits = tags["bits"] ?? false;
               this.onMessage("chat", {user: tags["display-name"], color: tags["color"], message: message, 
                 firstMessage: firstMessage,
                 id: tags["id"],
+                bits: bits
               });
             }
             break;

@@ -33,6 +33,7 @@ body {
 .annoucement {
   border-left: 8px solid #9147ff;
   border-right:8px solid #9147ff;
+  padding: 3px;
 }
 
 .raid {
