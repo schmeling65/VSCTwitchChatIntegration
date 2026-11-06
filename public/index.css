@@ -30,7 +30,7 @@ body {
     padding: 3px;
 }
 
-.annoucement {
+.announcement {
   border-left: 8px solid #9147ff;
   border-right:8px solid #9147ff;
   padding: 3px;
@@ -38,6 +38,10 @@ body {
 
 .raid {
   border-left: 8px solid #e190eb;
+  border-right: 8px solid #e190eb;
+  padding: 3px;
+  display: grid;
+  place-items: center;
 }
 
 .sub {

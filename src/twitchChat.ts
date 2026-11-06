@@ -56,7 +56,7 @@ export class TwitchChatClient {
         if (!foundMessageType) {
           continue;
         }
-        console.log(foundMessageType)
+        console.log(foundMessageType);
         switch (foundMessageType) {
           case "PING":
             this.ws?.send("PONG :tmi.twitch.tv");
@@ -72,10 +72,13 @@ export class TwitchChatClient {
             if (tags["display-name"] && message) {
               const firstMessage = tags["first-msg"] == "0" ? false : true;
               const bits = tags["bits"] ?? false;
-              this.onMessage("chat", {user: tags["display-name"], color: tags["color"], message: message, 
+              this.onMessage("chat", {
+                user: tags["display-name"],
+                color: tags["color"],
+                message: message,
                 firstMessage: firstMessage,
                 id: tags["id"],
-                bits: bits
+                bits: bits,
               });
             }
             break;
@@ -89,81 +92,63 @@ export class TwitchChatClient {
             const usernoticeMessage = this.parseString(line, tagslist, foundMessageType);
             switch (tagslist["msg-id"]) {
               case "viewermilestone":
-                this.onMessage(
-                  "usernotice",
-                  {
+                this.onMessage("usernotice", {
                   user: tagslist["display-name"],
                   color: tagslist["color"],
                   message: usernoticeMessage,
-                    msgType: "viewermilestone",
-                    streak: tagslist["msg-param-value"],
-                  },
-                );
+                  msgType: "viewermilestone",
+                  streak: tagslist["msg-param-value"],
+                });
                 break;
               case "announcement":
-                this.onMessage(
-                  "usernotice",
-                  {
+                this.onMessage("usernotice", {
                   user: tagslist["display-name"],
                   color: tagslist["color"],
                   message: usernoticeMessage,
-                    msgType: "annoucement",
-                  },
-                );
+                  msgType: "announcement",
+                });
                 break;
               case "resub":
-                this.onMessage(
-                  "usernotice",
-                  {
+                this.onMessage("usernotice", {
                   user: tagslist["display-name"],
                   color: tagslist["color"],
                   message: usernoticeMessage,
-                    msgType: "resub",
-                    tier: tagslist["msg-param-sub-plan"],
-                    numberOfTotalMonths: NumberToOrdinal(
-                      parseInt(tagslist["msg-param-cumulative-months"]),
-                    ),
-                    wantsToShare: tagslist["msg-param-should-share-streak"],
-                    consecutiveMonths: tagslist["msg-param-streak-months"],
-                  },
-                );
+                  msgType: "resub",
+                  tier: tagslist["msg-param-sub-plan"],
+                  numberOfTotalMonths: tagslist["msg-param-cumulative-months"] + NumberToOrdinal(
+                    parseInt(tagslist["msg-param-cumulative-months"]),
+                  ),
+                  wantsToShare: tagslist["msg-param-should-share-streak"],
+                  consecutiveMonths: tagslist["msg-param-streak-months"],
+                });
                 break;
               case "sub":
-                this.onMessage(
-                  "usernotice",
-                  {
-                user:     tagslist["display-name"],
-                  color: tagslist["color"],
-                  message: usernoticeMessage,
-                    msgType: "sub",
-                    tier: tagslist["msg-param-sub-plan"],
-                    numberOfTotalMonths: tagslist["msg-param-cumulative-months"],
-                  },
-                );
-                break;
-              case "subgift":
-                this.onMessage(
-                  "usernotice",
-                  {
+                this.onMessage("usernotice", {
                   user: tagslist["display-name"],
                   color: tagslist["color"],
                   message: usernoticeMessage,
-                    msgType: "sub",
-                    tier: tagslist["msg-param-sub-plan"],
-                    reciever: tagslist["msg-param-recipient-name"],
-                  },
-                );
+                  msgType: "sub",
+                  tier: tagslist["msg-param-sub-plan"],
+                  numberOfTotalMonths: tagslist["msg-param-cumulative-months"],
+                });
+                break;
+              case "subgift":
+                this.onMessage("usernotice", {
+                  user: tagslist["display-name"],
+                  color: tagslist["color"],
+                  message: usernoticeMessage,
+                  msgType: "sub",
+                  tier: tagslist["msg-param-sub-plan"],
+                  reciever: tagslist["msg-param-recipient-name"],
+                });
                 break;
               case "raid":
-                this.onMessage(
-                  "usernotice",
-                  {
+                this.onMessage("usernotice", {
                   user: tagslist["display-name"],
                   color: tagslist["color"],
                   message: "is raiding with " + tagslist["msg-param-viewerCount"] + " viewers.",
-                    msgType: "raid",
-                  },
-                );
+                  msgType: "raid",
+                });
                 break;
               default:
             }
@@ -171,7 +156,7 @@ export class TwitchChatClient {
           case "CLEARMSG":
             const match = line.match(/target-msg-id=([^;]+)/);
             const targetMsgId: string = match![1];
-            this.onMessage("clearmsg",{id: targetMsgId})
+            this.onMessage("clearmsg", { id: targetMsgId });
             break;
           default:
         }
@@ -207,6 +192,9 @@ export class TwitchChatClient {
     }
   }
 
+  
+  /*IRC: @badge-info=subscriber/4;badges=vip/1,subscriber/3003,subtember-2025/1;color=#D2691E;display-name=smookysdooky;emotes=;flags=;id=fa68fe5a-4251-4c1f-89e4-12458f53e65e;login=smookysdooky;mod=0;msg-id=subgift;msg-param-community-gift-id=2102739982094155998;msg-param-gift-months=1;msg-param-months=1;msg-param-origin-id=2102739982094155998;msg-param-recipient-display-name=Mimyk0ktapus;msg-param-recipient-id=183884032;msg-param-recipient-user-name=mimyk0ktapus;msg-param-sender-count=0;msg-param-sub-plan-name=Subscription\s(linalachesis);msg-param-sub-plan=1000;room-id=996322312;subscriber=1;system-msg=smookysdooky\sgifted\sa\sTier\s1\ssub\sto\sMimyk0ktapus!;tmi-sent-ts=1793987868201;user-id=260886010;user-type=;vip=1 :tmi.twitch.tv USERNOTICE #linalachesis
+  Bug bei keiner Message im Watchstreak*/
   isolateMessage(parts: string[], messageType: string) {
     const privmsgPositionInString = parts[parts.length - 1].indexOf(messageType);
     const messageString = parts[parts.length - 1].substring(privmsgPositionInString);

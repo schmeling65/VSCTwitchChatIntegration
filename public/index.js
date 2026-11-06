@@ -15,10 +15,9 @@ window.addEventListener("message", (event) => {
       div = postChatMessage(generaldata.data);
       break;
     case "usernotice":
-      div = postUserNotice(generaldata);
+      div = postUserNotice(generaldata.data);
       break;
     case "clearmsg":
-      console.log("clearmsg got in frontend")
       deleteChatMEssage(generaldata.data.id);
       break;
     default:
@@ -47,68 +46,68 @@ function createUserSpan(name, color) {
 
 function postChatMessage(data) {
   let div = createMessageDiv(data);
+  let bittext = ": "
   if (data.firstMessage) {
     div.classList.add("firstMsg");
   }
   if (data.bits) {
-
+    bittext += data.bits + " BITS. "
   }
   div.id = data.id;
   div.className += data.firstMessage ? " firstMsg" : "";
-  div.appendChild(document.createTextNode(": "+ data.bits + " BITS. " + data.message));
+  div.appendChild(document.createTextNode( bittext + data.message));
   return div
 }
 
 function postUserNotice(data) {
   let div = createMessageDiv(data);
-  div.className = " " + data.msgType;
+  div.className += " " + data.msgType;
   switch (data.msgType) {
     case "viewermilestone":
-      const text1 = document.createTextNode(" is on a " + data.msgData.streak + " watchstreak!\n");
+      //div.appendChild(createUserSpan(data.user, data.color));
+      const text1 = document.createTextNode(" is on a " + data.streak + " watchstreak!\n");
       div.appendChild(text1);
-      const msgSpan = document.createElement("span");
-      msgSpan.textContent = data.message;
-      div.appendChild(msgSpan);
+      div.appendChild(document.createTextNode(data.message))
       break;
     case "announcement":
-      div.appendChild(createUserSpan(data.user, data.color));
+      //div.appendChild(createUserSpan(data.user, data.color));
       div.appendChild(document.createTextNode("\n" + data.message));
       break;
     case "resub":
-      div.appendChild(createUserSpan(data.user, data.color));
+      //div.appendChild(createUserSpan(data.user, data.color));
       let text =
         " subscribed again for the " +
-        data.msgData.numberOfTotalMonths +
+        data.numberOfTotalMonths +
         " with a tier " +
         data.tier +
-        " sub .";
-      if (data.msgData.wantsToShare === "true") {
-        text += " The current sub-streak is " + data.msgData.consecutiveMonths + ".";
+        " sub.";
+      if (data.wantsToShare === "true") {
+        text += " The current sub-streak is " + data.consecutiveMonths + ".";
       }
       div.appendChild(document.createTextNode(text));
       break;
     case "sub":
-      div.appendChild(createUserSpan(data.user, data.color));
+      //div.appendChild(createUserSpan(data.user, data.color));
       let subtext = " subscribed with a tier " + data.tier + " sub.";
       if (subMonths > 0) {
-        subtext += " Sub-streak: " + data.msgData.numberOfTotalMonths;
+        subtext += " Sub-streak: " + data.numberOfTotalMonths;
       }
       div.appendChild(document.createTextNode(subtext));
       break;
     case "subgift":
-      div.appendChild(createUserSpan(data.user, data.color));
+      //div.appendChild(createUserSpan(data.user, data.color));
       div.appendChild(
         document.createTextNode(
-          " gifted a tier " + data.msgData.tier + " sub to " + data.msgData.reciever + ".",
+          " gifted a tier " + data.tier + " sub to " + data.reciever + ".",
         ),
       );
       break;
     case "raid":
-      div.appendChild(createUserSpan(data.user, data.color));
+      //div.appendChild(createUserSpan(data.user, data.color));
       div.appendChild(document.createTextNode(" " + data.message));
       break;
     default:
-      div.appendChild(createUserSpan(data.user, data.color));
+      //div.appendChild(createUserSpan(data.user, data.color));
       div.appendChild(document.createTextNode(" " + data.message));
   }
   return div
