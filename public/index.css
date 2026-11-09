@@ -11,6 +11,7 @@ body {
 
 .message {
     margin: 4px 0;
+    overflow-wrap: break-word;
 }
 
 .user {
@@ -37,13 +38,25 @@ body {
 }
 
 .raid {
-  border-left: 8px solid #e190eb;
-  border-right: 8px solid #e190eb;
+  border-left: 8px solid #5f1010;
+  border-right: 8px solid #5f1010;
   padding: 3px;
   display: grid;
   place-items: center;
 }
 
 .sub {
-  
+  border-left: 8px solid #5f1010;
+  border-right: 8px solid #5f1010;
+  padding: 3px;
+  display: grid;
+  place-items: center;
+}
+
+.resub {
+  border-left: 8px solid #5f1010;
+  border-right: 8px solid #5f1010;
+  padding: 3px;
+  display: grid;
+  place-items: center;
 }

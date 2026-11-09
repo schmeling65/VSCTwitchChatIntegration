@@ -64,22 +64,19 @@ function postUserNotice(data) {
   div.className += " " + data.msgType;
   switch (data.msgType) {
     case "viewermilestone":
-      //div.appendChild(createUserSpan(data.user, data.color));
       const text1 = document.createTextNode(" is on a " + data.streak + " watchstreak!\n");
       div.appendChild(text1);
       div.appendChild(document.createTextNode(data.message))
       break;
     case "announcement":
-      //div.appendChild(createUserSpan(data.user, data.color));
       div.appendChild(document.createTextNode("\n" + data.message));
       break;
     case "resub":
-      //div.appendChild(createUserSpan(data.user, data.color));
       let text =
         " subscribed again for the " +
         data.numberOfTotalMonths +
-        " with a tier " +
-        data.tier +
+        " month with a tier " +
+        { "1000": "tier 1", "2000": "tier 2", "3000": "tier 3", prime: "prime" }[data.tier] +
         " sub.";
       if (data.wantsToShare === "true") {
         text += " The current sub-streak is " + data.consecutiveMonths + ".";
@@ -87,15 +84,13 @@ function postUserNotice(data) {
       div.appendChild(document.createTextNode(text));
       break;
     case "sub":
-      //div.appendChild(createUserSpan(data.user, data.color));
       let subtext = " subscribed with a tier " + data.tier + " sub.";
-      if (subMonths > 0) {
+      if (data.numberOfTotalMonths > 0) {
         subtext += " Sub-streak: " + data.numberOfTotalMonths;
       }
       div.appendChild(document.createTextNode(subtext));
       break;
     case "subgift":
-      //div.appendChild(createUserSpan(data.user, data.color));
       div.appendChild(
         document.createTextNode(
           " gifted a tier " + data.tier + " sub to " + data.reciever + ".",
@@ -103,11 +98,9 @@ function postUserNotice(data) {
       );
       break;
     case "raid":
-      //div.appendChild(createUserSpan(data.user, data.color));
       div.appendChild(document.createTextNode(" " + data.message));
       break;
     default:
-      //div.appendChild(createUserSpan(data.user, data.color));
       div.appendChild(document.createTextNode(" " + data.message));
   }
   return div
