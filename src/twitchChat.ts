@@ -151,6 +151,13 @@ export class TwitchChatClient {
                   msgType: "raid",
                 });
                 break;
+              case "modiversary":
+                 this.onMessage("usernotice", {
+                  user: tagslist["display-name"],
+                  color: tagslist["color"],
+                  message: "is mod for " + tagslist["msg-param-months"] + " already.\n\n" + usernoticeMessage
+                 })
+                break;
               default:
             }
             break;
