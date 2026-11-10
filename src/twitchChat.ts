@@ -140,7 +140,7 @@ export class TwitchChatClient {
                   message: usernoticeMessage,
                   msgType: "subgift",
                   tier: tagslist["msg-param-sub-plan"],
-                  reciever: tagslist["msg-param-recipient-name"],
+                  reciever: tagslist["msg-param-recipient-display-name"],
                 });
                 break;
               case "raid":

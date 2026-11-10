@@ -75,7 +75,7 @@ function postUserNotice(data) {
       let text =
         " subscribed again for the " +
         data.numberOfTotalMonths +
-        " month with a tier " +
+        " month with a " +
         { "1000": "tier 1", "2000": "tier 2", "3000": "tier 3", prime: "prime" }[data.tier] +
         " sub.";
       if (data.wantsToShare === "true") {
@@ -93,7 +93,7 @@ function postUserNotice(data) {
     case "subgift":
       div.appendChild(
         document.createTextNode(
-          " gifted a tier " + data.tier + " sub to " + data.reciever + ".",
+          " gifted a tier " + { "1000": "tier 1", "2000": "tier 2", "3000": "tier 3", prime: "prime" }[data.tier] + " sub to " + data.reciever + ".",
         ),
       );
       break;
