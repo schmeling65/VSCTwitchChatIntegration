@@ -29,18 +29,24 @@ body {
     border: 5px solid #e7e8e9;
     border-radius: 12px;
     padding: 3px;
+    padding-left:10px;
+    padding-right:10px;
 }
 
 .announcement {
   border-left: 8px solid #9147ff;
   border-right:8px solid #9147ff;
   padding: 3px;
+  padding-left:10px;
+  padding-right:10px;
 }
 
 .raid {
   border-left: 8px solid #5f1010;
   border-right: 8px solid #5f1010;
   padding: 3px;
+  padding-left:10px;
+  padding-right:10px;
   display: grid;
   place-items: center;
 }
@@ -49,6 +55,8 @@ body {
   border-left: 8px solid #5f1010;
   border-right: 8px solid #5f1010;
   padding: 3px;
+  padding-left:10px;
+  padding-right:10px;
   display: grid;
   place-items: center;
 }
@@ -57,6 +65,8 @@ body {
   border-left: 8px solid #5f1010;
   border-right: 8px solid #5f1010;
   padding: 3px;
+  padding-left:10px;
+  padding-right:10px;
   display: grid;
   place-items: center;
 }
