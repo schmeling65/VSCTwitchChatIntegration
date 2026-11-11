@@ -81,6 +81,7 @@ function postUserNotice(data) {
       if (data.wantsToShare === "true") {
         text += " The current sub-streak is " + data.consecutiveMonths + ".";
       }
+      text += "\n\n" + data.message
       div.appendChild(document.createTextNode(text));
       break;
     case "sub":
