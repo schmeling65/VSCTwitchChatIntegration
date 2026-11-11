@@ -88,6 +88,7 @@ export class TwitchChatClient {
             //msg-id=resub msg-param-cumulative-months=43 (streak) msg-param-multimonth-duration=6 (im vorraus) msg-param-sub-plan=2000 (sub stufe in 1000, Prime when prime) nach USERNOTICE -> msg
             //msg-id=raid msg-param-viewerCount=1
             //color=#8A2BE2;display-name=Supre_Zay;id=0cbc2e4b-76b4-42bd-b407-d0b8013e7b66;login=supre_zay;mod=0;msg-id=subgift;msg-param-gift-months=1;msg-param-months=17;msg-param-origin-id=17461767544556782659;msg-param-recipient-display-name=heealmee9;msg-param-recipient-id=771979196;msg-param-recipient-user-name=heealmee9;msg-param-sender-count=195;msg-param-sub-plan-name=Subscription\s(linalachesis);msg-param-sub-plan=1000;room-id=996322312;subscriber=0;system-msg=Supre_Zay\sgifted\sa\sTier\s1\ssub\sto\sheealmee9!\sThey\shave\sgiven\s195\sGift\sSubs\sin\sthe\schannel!;tmi-sent-ts=1794243637683;user-id=97818217;user-type=;vip=1 :tmi.twitch.tv USERNOTICE #linalachesis
+            //msg-param-mass-gift-count=25;msg-param-origin-id=11263436333389888292;msg-param-sender-count=25;msg-param-sub-plan=1000;room-id=159949081;subscriber=1;system-msg=cporterva\sis\sgifting\s25\sTier\s1\sSubs\sto\sCassandrasChaos's\scommunity!\sThey've\sgifted\sa\stotal\sof\s25\sin\sthe\schannel!;tmi-sent-ts=1794440516588;user-id=1332921648;user-type=;vip=0 :tmi.twitch.tv USERNOTICE #cassandraschaos
 
             const tagslist: Record<string, string> = {};
             const usernoticeMessage = this.parseString(line, tagslist, foundMessageType);
@@ -157,6 +158,13 @@ export class TwitchChatClient {
                   color: tagslist["color"],
                   message: "is mod for " + tagslist["msg-param-months"] + " already.\n\n" + usernoticeMessage
                  })
+                break;
+              case "submysterygift":
+                this.onMessage("usernotice", {
+                  user: tagslist["display-name"],
+                  color: tagslist["color"],
+                  message: "gifted " + tagslist["msg-param-mass-gift-count"] + " subs to the community!."
+                })
                 break;
               default:
             }

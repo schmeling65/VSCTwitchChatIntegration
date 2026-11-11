@@ -101,6 +101,9 @@ function postUserNotice(data) {
     case "raid":
       div.appendChild(document.createTextNode(" " + data.message));
       break;
+    case "submysterygift":
+      div.appendChild(document.createTextNode(" " + data.message));
+      break;
     default:
       div.appendChild(document.createTextNode(" " + data.message));
   }
