@@ -215,6 +215,6 @@ export class TwitchChatClient {
     const privmsgPositionInString = parts[parts.length - 1].indexOf(messageType);
     const messageString = parts[parts.length - 1].substring(privmsgPositionInString);
     const messagePosition = messageString.indexOf(":");
-    return messageString.substring(messagePosition + 1);
+    return messagePosition !== -1 ? messageString.substring(messagePosition + 1) : "";
   }
 }
