@@ -163,6 +163,7 @@ export class TwitchChatClient {
                 this.onMessage("usernotice", {
                   user: tagslist["display-name"],
                   color: tagslist["color"],
+                  msgType: "submysterygift",
                   message: "gifted " + tagslist["msg-param-mass-gift-count"] + " subs to the community!."
                 })
                 break;

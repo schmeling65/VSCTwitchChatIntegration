@@ -71,6 +71,16 @@ body {
   place-items: center;
 }
 
+.subgift {
+  border-left: 8px solid #5f1010;
+  border-right: 8px solid #5f1010;
+  padding: 3px;
+  padding-left:10px;
+  padding-right:10px;
+  display: grid;
+  place-items: center;
+}
+
 .submysterygift {
   border-left: 8px solid #5f1010;
   border-right: 8px solid #5f1010;
